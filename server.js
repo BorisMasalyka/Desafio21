@@ -5,11 +5,21 @@ const log4js = require('./utils/logs');
 const MongoStore = require(`connect-mongo`);
 const dotenv = require(`dotenv`);
 const parseArgs = require(`minimist`);
+const { graphqlHTTP } = require(`express-graphql`)
+const graphQLSchema = require(`./graphql/schema`);
+const graphQLRootValue = require(`./graphql/rootValue`);
+
 dotenv.config();
 
 app.use("/avatar", express.static("./public/avatar"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use(`/graphql`, graphqlHTTP({
+    schema: graphQLSchema,
+    rootValue: graphQLRootValue(),
+    graphiql: true
+}))
 
 const session = require('express-session');
 
@@ -55,7 +65,7 @@ const isLogged = ((req, res, next) => {
     }
 });
 
-//Routers import - Producción
+//Routers import
 const productosRouter = require(`./routes/productosRouter`);
 const carritoRouter = require(`./routes/carritoRouter`);
 const { loginRouter } = require(`./routes/userRouter`);
@@ -65,7 +75,7 @@ const { profileRouter } = require(`./routes/userRouter`);
 const generalViewsRouter = require(`./routes/generalViewsRouter`);
 const ordenesRouter = require(`./routes/ordenesRouter`);
 
-//Routers - producción
+//Routers
 app.use(`/`, generalViewsRouter);
 app.use(`/api/productos`, isLogged, productosRouter);
 app.use(`/api/carrito`, isLogged, carritoRouter);
@@ -74,14 +84,6 @@ app.use(`/login`, loginRouter);
 app.use(`/signup`, signupRouter);
 app.use('/logout', isLogged, logoutRouter);
 app.use(`/profile`, isLogged, profileRouter);
-
-
-//Routers import - Test
-const productosRouterTest = require(`./routes/productosRouterTest`);
-
-//Router - Test
-app.use(`/test/productos`, productosRouterTest);
-
 
 app.use((req, res) => {
     loggerConsole.warn(`
@@ -92,7 +94,7 @@ app.use((req, res) => {
     loggerArchiveWarn.warn(`Estado: 404, Ruta consultada: ${req.originalUrl}, Metodo ${req.method}`);
     const msgError = `Estado: 404, Ruta consultada: ${req.originalUrl}, Metodo ${req.method}`;
 
-    res.render(`viewError`, {msgError});
+    res.render(`viewError`, { msgError });
 
     //res.status(404).json({ error: -2, descripcion: `ruta ${req.originalUrl} metodo ${req.method} no implementada` });
 });

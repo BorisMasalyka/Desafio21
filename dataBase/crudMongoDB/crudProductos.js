@@ -5,9 +5,10 @@ class Contenedor {
     }
 
     async save(product) {
-        const newProduct = new this.productsModel(product);
-        return this.mongoDB
-            .then(_ => newProduct.save())
+        product = new this.productsModel(product);
+
+        this.mongoDB
+            .then(_ => product.save())
             .then(document => document)
             .catch(err => console.log(`Error: ${err.message}`));
     }
@@ -42,7 +43,7 @@ class Contenedor {
     }
 
     async deleteById(idProduct) {
-        this.mongoDB
+        return this.mongoDB
             .then(_ => this.productsModel.deleteOne({
                 _id: idProduct
             }))
@@ -51,7 +52,6 @@ class Contenedor {
 
 
     async updateById(idProduct, name, price, url, description, date, code, stock) {
-
         return this.mongoDB
             .then(_ => this.productsModel.findOne({ _id: idProduct }, { __v: 0 }))
             .then(product => {
@@ -65,7 +65,6 @@ class Contenedor {
 
                 return product.save();
             })
-            .then(document => document)
             .catch(err => console.log(`Error: ${err.message}`))
     }
 
